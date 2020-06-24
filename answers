@@ -1,0 +1,113 @@
+# First, I create a new data set with Circulation.Date from 2008-01-01 onwards using the subset function
+exclusive_foo <- new_foo[which(new_foo$CirculationDate >= as.Date(as.character("2008-01-01"))), ]
+
+# Then I calculate the difference between the Approval.Date and the Original.Completion.Date
+date_diff<- exclusive_foo$OriginalCompletionDate - exclusive_foo$ApprovalDate
+
+#create a plot to see changes between the original planned project duration differ from actual duration
+lm(date_diff~exclusive_foo$RevisedCompletionDate)
+
+# I remove NA variables in the results of date_diff as there might be unexpected NA variables in 
+# Approval.Date and Original.Completion.Date
+clear_date_diff <- na.omit(date_diff)
+
+mean(clear_date_diff)
+median(clear_date_diff)
+quantile(clear_date_diff)
+
+# Answer: from the regression line, we can see that the slop (the average increase in Y associated 
+# with one-unit increase in X) insignificant (0.03868), which indicates that there is no 
+# considerable difference between the originally planned project duration and the actual planned 
+# project duration. 
+
+# QUESTION 1B
+
+actual_date_diff <- exclusive_foo$RevisedCompletionDate - exclusive_foo$ApprovalDate
+mean(actual_date_diff)
+median(actual_date_diff)
+quantile(actual_date_diff)
+# Answer: We see that there is a big difference between the mean, median, and values in
+# Q1 and Q3 of the interquartile range of the expected and actual data. Respectively, the expected 
+# and actual data expressed in mean is 648.5879 days and 1213.106 days. Similarly, they are 592 days 
+# and 1119 days for median; 783 days and 1478 days for Q3 for the interquartile range.
+
+# QUESTION 2
+
+# First, I command R to identify the count of ratings by type
+rating_count_zero <- length(which(exclusive_foo$Rating == 0))
+rating_count_one <- length(which(exclusive_foo$Rating == 1))
+rating_count_two <- length(which(exclusive_foo$Rating == 2))
+rating_count_three <- length(which(exclusive_foo$Rating == 3))
+
+all_sum <- sum(rating_count_zero, rating_count_one, rating_count_two, rating_count_three)
+
+# Then, I calculate the percentage with formula (count/sum(count))*100
+percent_zero <- (rating_count_zero/all_sum)*100
+percent_one <- (rating_count_one/all_sum)*100
+percent_two <- (rating_count_two/all_sum)*100
+percent_three <- (rating_count_three/all_sum)*100
+
+all_percentage <- c(percent_zero,percent_one, percent_two, percent_three)
+
+# Create a table with data.frame function
+data.frame(rating0 = percent_zero, rating1 = percent_one, rating2 = percent_two, rating3 = percent_three)
+
+# Provide a title 
+"Percentage of projects rated 1, 2, and 3" 
+
+# The numerical % results rounded to the nearest percentage-point.
+rounded.numbers <- round(all_percentage, digits = 0)
+rounded.numbers
+
+
+# QUESTION 3
+# First, I exclude all PPTA projects
+which.are.PPTA <- which(exclusive_foo$Type == "PPTA") 
+newer <- exclusive_foo[- which.are.PPTA, ]
+
+# Reiterate the code for calculate percentage with new data set
+new_rate_0 <- length(which(newer$Rating == 0))
+new_rate_1 <- length(which(newer$Rating == 1))
+new_rate_2 <- length(which(newer$Rating == 2))
+new_rate_3 <- length(which(newer$Rating == 3))
+
+new_sum <- sum(new_rate_0, new_rate_1, new_rate_2, new_rate_3)
+
+# Then, I calculate the percentage with formula (count/sum(count))*100
+p_zero <- (new_rate_0/new_sum)*100
+p_one <- (new_rate_1/new_sum)*100
+p_two <- (new_rate_2/new_sum)*100
+p_three <- (new_rate_3/new_sum)*100
+
+new_percentage <- c(p_zero,p_one, p_two, p_three)
+
+# Create a table with data.frame function
+data.frame(rating0 = p_zero, rating1 = p_one, rating2 = p_two, rating3 = p_three)
+
+# Provide a title 
+"Percentage of projects rated 1, 2, and 3"
+
+# The numerical % results rounded to the nearest percentage-point.
+rounded.numbers <- round(new_percentage, digits = 0)
+rounded.numbers
+
+
+# QUESTION 4 
+
+# First, I identify the top 25% of projects by "Revised.Amount" and the bottom 25% of projects by 
+# "RevisedAmount" using the quantile function and extract the subset using [brackets]
+top_and_bottom <- quantile(na.omit(new_foo$RevisedAmount), c(0.25,0.75))
+bottom_25 <- new_foo[which(new_foo$RevisedAmount <= top_and_bottom[1]), ]
+top_25 <- new_foo[which(new_foo$RevisedAmount >= top_and_bottom[2]), ]
+
+# Then I compare the ratings of these projects 
+modle <- lm(bottom_25$Rating~bottom_25$RevisedAmount)
+mudle <- lm(top_25$Rating~top_25$RevisedAmount)
+
+# I want to view the p value for each linear regression 
+summary(modle)
+summary(mudle)
+
+# Answer: From the linear regressions, it is conclusive that there is not a relationship between 
+# budget size and ratings for the top 25% projects (p value = 0.112) but there is a relationship between budget size
+# and ratings for the bottom 25% projects (p value = 0.6927)
