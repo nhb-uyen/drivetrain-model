@@ -1,0 +1,71 @@
+######### RUN THE CODE BELOW IN R. R-STUDIO IS THE RECOMMENDED IDE. BOTH R AND R-STUDIO ARE FREE.
+######### QUESTIONS SHOULD BE POSTED TO PIAZZA
+######### THE ACTUAL ASSIGNMENT BEGINS ON LINE 71
+
+
+### Multilateral Development Institution Data
+foo <- read.csv("https://tinyurl.com/yb4phxx8") # read in the data
+
+# column names
+names(foo)
+
+# dimensions of the data set
+dim(foo)
+
+# quick look at the data structure
+head(foo)
+
+# one thing to be very careful with (in this data set) is the use of dates. 8 columns involve dates.
+
+# take note of the columns representing calendar dates
+date.columns <- c(11, 12, 14, 15, 16, 17, 18, 25)
+
+# these columns need some tweaking--I want to address missing values, calling the blank (empty) 
+# elements "NA" instead of leaving them blank, and I wish to tell R these are "Date" objects.
+
+for(i in date.columns)  # this "for loop" only loops through the "date.columns" -- no other columns.
+  
+{
+  
+  # identify which values are missing in the "i"th column of the foo data set
+  which_values_are_missing <- which(as.character(foo[, i]) == "")
+  
+  # those values that are missing (blank) in the "i"th column are replaced by <NA>
+  # because R knows how to handle "NA" -- NA means something special in R--blanks are handled 
+  # more unpredictably (which is bad).
+  foo[which_values_are_missing, i] <- NA
+  
+  # last step--replace each of these columns (which is structured as a column of "factor" values)
+  # as a column of dates--i.e., convert them to an object of "class" = Date. They are dates, after all.
+  # And if you convert them to the Date class, R will know they are dates and you can manipulate 
+  # dates in a simple, straightforward way. Otherwise, you won't be able to easily manipulate them
+  # arithmetically.  E.g., for simple Date operations, see lines 48-58 below...
+  # **By the way, if you don't understand what a "factor" is in R, you should Google it.** 
+  foo[, i] <- as.Date(as.character(foo[, i]))
+  
+}
+
+# Now R knows that these columns are comprised of dates
+# for example...  Replicate this yourself...
+
+# foo[3,12]
+# [1] "1968-03-13"
+
+# foo[4,12]
+# [1] "1968-07-03"
+
+# foo[3,12] - foo[4,12]
+# Time difference of -112 days
+
+# Also, one additional helpful hint... How to eliminate rows with NAs...
+# The "is.na" function--for more info, Google it or type ?is.na at the R command prompt in the console.
+which.have.NAs <- which(is.na(foo$Rating == TRUE)) # for which rows is the claim "is.na" a TRUE claim?
+
+# Then, if you wanted to, e.g., remove all those rows, retaining only the rows with ratings...
+new_foo <- foo[-which.have.NAs, ]
+# Notice I called this tweaked data set "new_foo" instead of rewriting over the original data set...
+# It's a bit safer to do this, in case I decide I want to quickly revert back to the original data set.
+
+###########################################################################
+
+###########################################################################
